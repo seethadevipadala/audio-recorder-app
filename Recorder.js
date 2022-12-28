@@ -1,10 +1,49 @@
-import React, { useState } from "react";
-import { View, Text, Button } from "react-native";
+import React, { useEffect, useState } from "react";
+import { View, Text, Button, Vibration } from "react-native";
 import { Audio } from "expo-av";
+import Icon from "react-native-vector-icons/MaterialIcons";
+import Icons from "react-native-vector-icons/Feather";
+
 const Recorder = () => {
+  var recordingTimer;
   const [recording, setRecording] = React.useState();
-    const [uri, setUri] = useState();
-    const [sound, setSound] = useState();
+  const [isRecording, setIsRecording] = useState(false);
+  const [isPlaying, setIsplaying] = useState(false);
+  const [uri, setUri] = useState();
+  const [hours, setHours] = useState(0);
+  const [minutes, setMinutes] = useState(0);
+  const [seconds, setSeconds] = useState(0);
+  const [showPlayIcon, setShowPlayIcon] = useState(false);
+  const [playingHours, setPlayingHours] = useState(hours);
+  const [playingMinutes, setPlayingMinutes] = useState(minutes);
+  const [playingSeconds, setPlayingSeconds] = useState(seconds);
+  console.log(seconds);
+
+  console.log(isRecording, "isrecording");
+  useEffect(() => {
+    if (isPlaying) {
+      recordingTimer = setInterval(() => {
+        setSeconds((seconds) => seconds - 1);
+        if (seconds === 0) {
+          setSeconds(0)
+          setShowPlayIcon(false);
+          setIsplaying(false);
+          setShowPlayIcon(false)
+        }
+      }, 1000);
+    }
+    return () => clearInterval(recordingTimer);
+  });
+  useEffect(() => {
+    if (isRecording) {
+      console.log(isRecording, "isrecording");
+
+      recordingTimer = setInterval(() => {
+        setSeconds((seconds) => seconds + 1);
+      }, 1000);
+    }
+    return () => clearInterval(recordingTimer);
+  });
   async function startRecording() {
     try {
       console.log("Requesting permissions..");
@@ -35,40 +74,103 @@ const Recorder = () => {
     setUri(uri);
   }
 
-//   async function playSound() {
-//     console.log("Loading Sound");
-//     const  sound  = await Audio.Sound.createAsync(
-//       {uri}
-//     //    { uri: uri}
-//     );
-//     setSound(sound);
-
-//     console.log("Playing Sound");
-//     await sound.playAsync();
-//   }
-    const prepareToPlay = async () => {
-    console.log(uri,"fileuri")
+  const prepareToPlay = async () => {
+    console.log(uri, "fileuri");
+    setIsplaying(true);
     const sound = new Audio.Sound();
 
     try {
-        await sound.loadAsync({
-            uri: uri,
-            shouldPlay: true,
-        });
-        await sound.playAsync();
-        console.log("Your sound is playing!")
-
+      await sound.loadAsync({
+        uri: uri,
+        shouldPlay: true,
+      });
+      await sound.playAsync();
+      console.log("Your sound is playing!");
     } catch (error) {
-        // An error occurred!
-        console.error('AUDIO PLAY: ', error);
+      console.error("AUDIO PLAY: ", error);
     }
-};
+  };
   return (
     <View>
-      <Button title="start" onPress={startRecording} />
-          <Button title="Stop" onPress={stopRecording} />
-      <Button title="Play" onPress={prepareToPlay } />
-          
+      <View
+        style={{
+          height: 200,
+          width: 210,
+          backgroundColor: "rgb(74, 133, 212)",
+          borderRadius: 120,
+        }}
+      >
+        <View style={{ marginLeft: 30, marginBottom: 50 }}>
+          {isRecording ? (
+            <Icon
+              name="settings-voice"
+              size={150}
+              color="white"
+              onPress={() => {
+                stopRecording();
+                setShowPlayIcon(true);
+                Vibration.vibrate();
+
+                setIsRecording(false);
+              }}
+            />
+          ) : (
+            <Icon
+              name="keyboard-voice"
+              size={150}
+              color="white"
+              onPress={() => {
+                startRecording();
+                setIsRecording(true);
+              Vibration.vibrate();
+
+              }}
+            />
+          )}
+        </View>
+        <View></View>
+      </View>
+      <Text style={{ marginLeft: 10, fontSize: 50 }}>
+        {/* {hours}:{minutes}:{seconds} */}
+        {hours < 10 ? "0" + hours : hours}:
+        {minutes < 10 ? "0" + minutes : minutes}:
+        {seconds < 10 ? "0" + seconds : seconds}
+      </Text>
+      <View style={{ marginLeft: 70, marginTop: 60 }}>
+        {showPlayIcon && (
+          <Icons
+            name="play-circle"
+            size={70}
+            color="rgb(74, 133, 212)"
+            onPress={() => {
+              prepareToPlay();
+              setPlayingSeconds(seconds);
+            }}
+          />
+        )}
+      </View>
+      {/* <Icons name="pause-circle" size={40} color="rgb(74, 133, 212)"/> */}
+{/* 
+      <View style={{ flexDirection: "row", marginTop: 130 }}>
+        <Button
+          title="start"
+          onPress={() => {
+            startRecording();
+            setIsRecording(true);
+          }}
+        />
+        <View style={{ marginLeft: 100 }}>
+          <Button
+            title=" Stop "
+            onPress={() => {
+              stopRecording();
+              setShowPlayIcon(true);
+
+              setIsRecording(false);
+            }}
+          />
+        </View>
+      </View> */}
     </View>
   );
 };

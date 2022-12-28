@@ -13,7 +13,9 @@
     "expo-av": "^13.0.2",
     "expo-status-bar": "~1.4.2",
     "react": "18.1.0",
-    "react-native": "0.70.5"
+    "react-native": "0.70.5",
+    "react-native-feather": "^1.1.2",
+    "react-native-vector-icons": "^9.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.9"
